@@ -15,15 +15,6 @@ encoded = "utf-8"
 clients_ans = []
 
 
-def start_game():
-    pass
-    # while (time.time()<10):
-
-    #     try:
-
-    #     except Exception as e:
-
-
 def send_broadcast(udp_socket):
     msg = struct.pack("Ibh", 2882395322, 2, tcp_port)
     udp_socket.sendto(msg, ("<broadcast>", udp_port))
@@ -78,59 +69,72 @@ if __name__ == "__main__":
     tcp_socket_clients.bind(("", tcp_port))
     tcp_socket_clients.listen(2)
     tcp_socket_list = []
-    with pool(max_workers=2):
-        while len(tcp_socket_list) < 2:
-            (tcp_socket, addr) = tcp_socket_clients.accept()
-            group_name = tcp_socket.recv(1024).decode(encoded)
-            tcp_socket_list.append((group_name, tcp_socket))
-            print("************************")
-            print(addr)
+    # with pool(max_workers=2):
+    while len(tcp_socket_list) < 2:
+        (tcp_socket, addr) = tcp_socket_clients.accept()
+        group_name = tcp_socket.recv(1024).decode(encoded)
+        tcp_socket_list.append((group_name, tcp_socket))
+        print("************************")
+        print(addr)
 
-            # (tcp_socket2, addr2) = tcp_socket_clients.accept()
-            # group_name2 = tcp_socket2.recv(1024).decode(encoded)
-            # tcp_socket_list.append((group_name2, tcp_socket2))
-            # print("************************")
-            # print(group_name2)
-        welcome_msg = f"Welcome to Quick Maths.\nPlayer 1: {tcp_socket_list[0][0]}Player 2: {tcp_socket_list[1][0]}==\nPlease answer the following question as fast as you can:\n"
-        eq = create_random_equation()
-        eq_ans = eval(eq)
-        print(eq_ans)
-        print(type(eq_ans))
-        welcome_msg += eq
-        print(welcome_msg)
-        welcome_msg_bytes = bytes(welcome_msg, encoded)
-        tcp_socket_list[0][1].send(welcome_msg_bytes)
-        tcp_socket_list[1][1].send(welcome_msg_bytes)
-        t_client1 = threading.thread(target=listening_to_client, args=tcp_socket_list[0])
-        t_client2 = threading.thread(target=listening_to_client, args=tcp_socket_list[1])
-        current_time = time.time()
-        while !len(cliens_ans) and time.time() - current_time <= 10:
-            t_client1.start()
-            t_client2.start()
+    udp_socket.close()
+    # (tcp_socket2, addr2) = tcp_socket_clients.accept()
+    # group_name2 = tcp_socket2.recv(1024).decode(encoded)
+    # tcp_socket_list.append((group_name2, tcp_socket2))
+    # print("************************")
+    # print(group_name2)
+    welcome_msg = f"Welcome to Quick Maths.\nPlayer 1: {tcp_socket_list[0][0]}Player 2: {tcp_socket_list[1][0]}==\nPlease answer the following question as fast as you can:\n"
+    eq = create_random_equation()
+    eq_ans = eval(eq)
+    print(eq_ans)
+    welcome_msg += eq
+    print(welcome_msg)
+    welcome_msg_bytes = bytes(welcome_msg, encoded)
 
-        if !len(cliens_ans):
-            msg = "tecko"
+    tcp_socket_list[0][1].send(welcome_msg_bytes)
+    tcp_socket_list[1][1].send(welcome_msg_bytes)
+    t_client1 = threading.Thread(target=listening_to_client, args=[tcp_socket_list[0]])
+    t_client2 = threading.Thread(target=listening_to_client, args=[tcp_socket_list[1]])
+    start_game_time = time.time()
+    # without this sleep it will terminated
+    time.sleep(0.5)
+    t_client1.start()
+    t_client2.start()
+
+    while True:
+        # without this sleep it will terminated
+        time.sleep(0.2)
+        if len(clients_ans) > 0 or time.time() - start_game_time > 10:
+            break
+
+    end_game_msg = f"Game over!\nThe correct answer was {eq_ans}!\n\n"
+
+    if len(clients_ans) == 0:
+        msg = "The game ended with a draw"
+        print(msg)
+    else:
+        if int(clients_ans[0][1]) == eq_ans:
+            winner = clients_ans[0][0]
         else:
-            # need to implement it
-            winner = check_ans(clients_ans, tcp_socket_list)
-            msg = winner
+            for item in tcp_socket_list:
+                if item[0] != clients_ans[0][0]:
+                    winner = item[0]
+        print(f"the winnder team is: {winner}")
+        msg = f"Congratulations to the winner: {winner}"
+    end_game_msg += msg
+    print(end_game_msg)
 
-        # num_from_client1 = tcp_socket_list[0][1].recv(1024).decode(encoded)
-        # num_from_client2 = tcp_socket_list[1][1].recv(1024).decode(encoded)
+    # else:
+    #     # need to implement it
+    #     winner = check_ans(clients_ans, tcp_socket_list)
+    #     msg = winner
 
-        # print(f"client1 number is: {num_from_client1} and client2 number is: {num_from_client2}")
+    # num_from_client1 = tcp_socket_list[0][1].recv(1024).decode(encoded)
+    # num_from_client2 = tcp_socket_list[1][1].recv(1024).decode(encoded)
 
-        # if eval == int(num_from_client1):
-        #     print(f"{tcp_socket_list[0][0]} wins")
-        # else:
-        #     print(f"{tcp_socket_list[1][0]} wins")
+    # print(f"client1 number is: {num_from_client1} and client2 number is: {num_from_client2}")
 
-
-
-
-
-
-
-
-
-
+    # if eval == int(num_from_client1):
+    #     print(f"{tcp_socket_list[0][0]} wins")
+    # else:
+    #     print(f"{tcp_socket_list[1][0]} wins")
