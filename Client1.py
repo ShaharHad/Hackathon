@@ -51,8 +51,9 @@ if __name__ == "__main__":
     group_name_bytes = bytes(group_name + "\n", encoded)
     tcp_socket.sendall(group_name_bytes)
     print(tcp_socket.recv(1024).decode(encoded))
-
-    print(f"server_address: {server_address}")
+    key_num = getch.getch()
+    tcp_socket.send(bytes(key_num, encoded))
+    tcp_socket.recv(1024).decode(encoded)
 
 # udp_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # udp_client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

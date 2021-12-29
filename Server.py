@@ -12,6 +12,7 @@ udp_port = 13117
 tcp_port = 13000
 server_ip = scapy.get_if_addr("eth1")
 encoded = "utf-8"
+clients_ans = []
 
 
 def start_game():
@@ -36,14 +37,21 @@ def thread_broadcast(udp):
 
 def create_random_equation():
     operator_list = ["+", "-"]
-    equation_len = random.randint(2, 4)
+    equation_numbers = random.randint(2, 4)
     eq = str(random.randint(1, 20))
-    for i in range(1, equation_len):
+    for i in range(1, equation_numbers):
         oper_index = random.randint(0, 1)
         print(f"oper_index: {oper_index}")
         eq += operator_list[oper_index]
         eq += str(random.randint(1, 10))
     return eq
+
+
+# get item (group name, socket) from the socket list and update the client answer in the global list
+def listening_to_client(item):
+    global clients_ans
+    num_from_client = item[1].recv(1024).decode(encoded)
+    clients_ans.append((item[0], num_from_client))
 
 
 # def send_broadcast(udp_socket):
@@ -65,29 +73,57 @@ if __name__ == "__main__":
     sending.start()
 
     # TCP
-    tcp_socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp_socket_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-    tcp_socket_client.bind(("", tcp_port))
-    tcp_socket_client.listen(2)
+    tcp_socket_clients = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket_clients.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    tcp_socket_clients.bind(("", tcp_port))
+    tcp_socket_clients.listen(2)
     tcp_socket_list = []
-    # with pool(max_workers=2):
-    print("here")
-    while len(tcp_socket_list) < 2:
-        (tcp_socket, addr) = tcp_socket_client.accept()
-        group_name = tcp_socket.recv(1024).decode(encoded)
-        tcp_socket_list.append((group_name, tcp_socket))
-        print("************************")
-        print(addr)
+    with pool(max_workers=2):
+        while len(tcp_socket_list) < 2:
+            (tcp_socket, addr) = tcp_socket_clients.accept()
+            group_name = tcp_socket.recv(1024).decode(encoded)
+            tcp_socket_list.append((group_name, tcp_socket))
+            print("************************")
+            print(addr)
 
-        # (tcp_socket2, addr2) = tcp_socket_client.accept()
-        # group_name2 = tcp_socket2.recv(1024).decode(encoded)
-        # tcp_socket_list.append((group_name2, tcp_socket2))
-        # print("************************")
-        # print(group_name2)
-    welcome_msg = f"Welcome to Quick Maths.\nPlayer 1: {tcp_socket_list[0][0]}\nPlayer 2: {tcp_socket_list[1][0]}\n==\nPlease answer the following question as fast as you can:\n"
-    eq = create_random_equation()
-    welcome_msg += eq
-    print(welcome_msg)
+            # (tcp_socket2, addr2) = tcp_socket_clients.accept()
+            # group_name2 = tcp_socket2.recv(1024).decode(encoded)
+            # tcp_socket_list.append((group_name2, tcp_socket2))
+            # print("************************")
+            # print(group_name2)
+        welcome_msg = f"Welcome to Quick Maths.\nPlayer 1: {tcp_socket_list[0][0]}Player 2: {tcp_socket_list[1][0]}==\nPlease answer the following question as fast as you can:\n"
+        eq = create_random_equation()
+        eq_ans = eval(eq)
+        print(eq_ans)
+        print(type(eq_ans))
+        welcome_msg += eq
+        print(welcome_msg)
+        welcome_msg_bytes = bytes(welcome_msg, encoded)
+        tcp_socket_list[0][1].send(welcome_msg_bytes)
+        tcp_socket_list[1][1].send(welcome_msg_bytes)
+        t_client1 = threading.thread(target=listening_to_client, args=tcp_socket_list[0])
+        t_client2 = threading.thread(target=listening_to_client, args=tcp_socket_list[1])
+        current_time = time.time()
+        while !len(cliens_ans) and time.time() - current_time <= 10:
+            t_client1.start()
+            t_client2.start()
+
+        if !len(cliens_ans):
+            msg = "tecko"
+        else:
+            # need to implement it
+            winner = check_ans(clients_ans, tcp_socket_list)
+            msg = winner
+
+        # num_from_client1 = tcp_socket_list[0][1].recv(1024).decode(encoded)
+        # num_from_client2 = tcp_socket_list[1][1].recv(1024).decode(encoded)
+
+        # print(f"client1 number is: {num_from_client1} and client2 number is: {num_from_client2}")
+
+        # if eval == int(num_from_client1):
+        #     print(f"{tcp_socket_list[0][0]} wins")
+        # else:
+        #     print(f"{tcp_socket_list[1][0]} wins")
 
 
 

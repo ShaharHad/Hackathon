@@ -52,6 +52,10 @@ if __name__ == "__main__":
     group_name_bytes = bytes(group_name + "\n", encoded)
     tcp_socket.sendall(group_name_bytes)
     print(tcp_socket.recv(1024).decode(encoded))
+    key_num = getch.getch()
+    tcp_socket.send(bytes(key_num, encoded))
+    tcp_socket.recv(1024).decode(encoded)
+
     # print(f"server_address: {server_address}")
     # check = false
     # while(!check):
