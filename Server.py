@@ -62,22 +62,21 @@ def closed_clients_sockets(tcp_socket_list):
 
 
 if __name__ == "__main__":
+    # UDP
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    print(f"Server started, listening on IP address {server_ip}")
+    sending = multiprocessing.Process(target=thread_broadcast, args=(udp_socket,))
+    sending.start()
+
+    # TCP
+    tcp_socket_clients = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket_clients.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    tcp_socket_clients.bind(("", tcp_port))
+    tcp_socket_clients.listen(2)
     while True:
         tcp_socket_list = []
-        # UDP
-        udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        print(f"Server started, listening on IP address {server_ip}")
-        sending = multiprocessing.Process(target=thread_broadcast, args=(udp_socket,))
-        sending.start()
-
-        # TCP
-        tcp_socket_clients = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tcp_socket_clients.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        tcp_socket_clients.bind(("", tcp_port))
-        tcp_socket_clients.listen(2)
-
         while len(tcp_socket_list) < 2:
             (tcp_socket, addr) = tcp_socket_clients.accept()
             group_name = tcp_socket.recv(1024).decode(encoded)
@@ -124,11 +123,15 @@ if __name__ == "__main__":
             msg = f"Congratulations to the winner: {winner}"
         end_game_msg += msg
         print(end_game_msg)
-        t_client3 = threading.Thread(target=send_end_game_msg, args=[tcp_socket_list[0][1], end_game_msg])
-        t_client4 = threading.Thread(target=send_end_game_msg, args=[tcp_socket_list[1][1], end_game_msg])
-        t_client3.start()
-        t_client4.start()
-
+        for (group_name, client) in tcp_socket_list:
+            client.sendall(end_game_msg)
+            client.close()
+        # t_client3 = threading.Thread(target=send_end_game_msg, args=[tcp_socket_list[0][1], end_game_msg])
+        # t_client4 = threading.Thread(target=send_end_game_msg, args=[tcp_socket_list[1][1], end_game_msg])
+        # t_client3.start()
+        # t_client4.start()
+        sending = multiprocessing.Process(target=thread_broadcast, args=(udp_socket,))
+        sending.start()
         print(f"Game over, sending out offer requests...")
         time.sleep(0.5)
-        closed_clients_sockets(tcp_socket_list)
+        # closed_clients_sockets(tcp_socket_list)

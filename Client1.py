@@ -59,7 +59,7 @@ if __name__ == "__main__":
         print(tcp_socket.recv(1024).decode(encoded))
         # get a key input
         key_num = getch.getch()
-        tcp_socket.send(bytes(key_num, encoded))
+        tcp_socket.sendall(bytes(key_num, encoded))
         # tcp_socket.settimeout(0.01)
         print(tcp_socket.recv(1024).decode(encoded))
         print(tcp_socket.recv(1024).decode(encoded))
