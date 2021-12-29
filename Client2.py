@@ -5,9 +5,10 @@ import getch
 import socket
 import time
 
-group_name = "Pytonic2"
+group_name = "Pytonic"
 udp_port = 13117
 encoded = "utf-8"
+a
 
 
 # UDP process
@@ -60,28 +61,3 @@ if __name__ == "__main__":
         print(tcp_socket.recv(1024).decode(encoded))
         print(tcp_socket.recv(1024).decode(encoded))
         tcp_socket.close()
-
-    # print(f"server_address: {server_address}")
-    # check = false
-    # while(!check):
-    #     msg_send_servr = getch.getche()
-    #     msg_bytes = bytes(msg_send_servr + "\n", encoded)
-    #     tcp_socket.sendall(msg_bytes)
-    #     msg_rec_servr= None
-    #     if (!msg_rec_servr):
-    #         msg_rec_servr = tcp_socket.recv(1024)
-    # tcp_socket.close()
-
-# udp_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# udp_client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-# udp_client.bind(("", udp_port))
-# # udp_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-# print("Client started, listening for offer requests...")
-# data, addr = udp_client.recvfrom(1024)
-# msg = struct.unpack('Ibh', data)
-# ip_host = addr[0]
-# tcp_port = msg[2]
-# print(f"address: {addr}")
-# print(f"tcp_port: {tcp_port}")
-# print(f"Received offer from {ip_host}, attempting to connect...")
-# udp_client.close()
