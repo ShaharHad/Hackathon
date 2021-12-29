@@ -4,7 +4,7 @@ import struct
 import getch
 import socket
 
-group_name = "Pytonic1"
+group_name = "Pytonic2"
 udp_port = 13117
 encoded = "utf-8"
 
@@ -39,7 +39,8 @@ if __name__ == "__main__":
         if int(server_address[1]) == 13000:  # and int(server_address[1]) == 13000:
             break
 
-    #    print(server_address)
+    # udp_client.close()
+    print(server_address)
 
     # TCP
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,8 +52,16 @@ if __name__ == "__main__":
     group_name_bytes = bytes(group_name + "\n", encoded)
     tcp_socket.sendall(group_name_bytes)
     print(tcp_socket.recv(1024).decode(encoded))
-
-    print(f"server_address: {server_address}")
+    # print(f"server_address: {server_address}")
+    # check = false
+    # while(!check):
+    #     msg_send_servr = getch.getche()
+    #     msg_bytes = bytes(msg_send_servr + "\n", encoded)
+    #     tcp_socket.sendall(msg_bytes)
+    #     msg_rec_servr= None
+    #     if (!msg_rec_servr):
+    #         msg_rec_servr = tcp_socket.recv(1024)
+    # tcp_socket.close()
 
 # udp_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # udp_client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
