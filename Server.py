@@ -40,6 +40,7 @@ def create_random_equation():
 # get item (group name, socket) from the socket list and update the client answer in the global list
 def listening_to_client(item):
     global clients_ans
+    time.sleep(0.2)
     num_from_client = item[1].recv(1024).decode(encoded)
     clients_ans.append((item[0], num_from_client))
 
